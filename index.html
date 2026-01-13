@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Recognition AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+      text-align: center;
+      padding: 40px;
+    }
+
+    img {
+      max-width: 300px;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+
+    #results {
+      margin-top: 20px;
+      text-align: left;
+      display: inline-block;
+    }
+
+    .prediction {
+      background: #1a1a1a;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧠 Image Recognition AI</h1>
+  <p>Upload an image and the AI will try to identify it.</p>
+
+  <input type="file" accept="image/*" id="imageUpload">
+  <br>
+  <img id="preview" />
+  <div id="results"></div>
+
+  <script>
+    let model;
+
+    async function loadModel() {
+      document.getElementById("results").innerHTML = "Loading AI model...";
+      model = await mobilenet.load();
+      document.getElementById("results").innerHTML = "Model loaded. Upload an image.";
+    }
+
+    loadModel();
+
+    document.getElementById("imageUpload").addEventListener("change", async (event) => {
+      const img = document.getElementById("preview");
+      const file = event.target.files[0];
+
+      if (!file) return;
+
+      img.src = URL.createObjectURL(file);
+
+      img.onload = async () => {
+        const predictions = await model.classify(img);
+        displayResults(predictions);
+      };
+    });
+
+    function displayResults(predictions) {
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<h3>Predictions:</h3>";
+
+      predictions.forEach(p => {
+        const confidence = (p.probability * 100).toFixed(2);
+        resultsDiv.innerHTML += `
+          <div class="prediction">
+            <strong>${p.className}</strong><br>
+            Confidence: ${confidence}%
+          </div>
+        `;
+      });
+    }
+  </script>
+
+</body>
+</html>
